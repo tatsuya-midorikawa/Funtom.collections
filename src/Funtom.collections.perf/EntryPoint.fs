@@ -75,6 +75,7 @@ let main args =
   v <- 100
   x |> printfn "%A"
   System.Console.ReadKey() |> ignore
+
   0
   //let mutable p = NativePtr.read (NativePtr.ofNativeInt<int> x)
   //p <- 100
