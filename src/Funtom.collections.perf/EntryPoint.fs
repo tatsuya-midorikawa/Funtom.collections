@@ -68,12 +68,18 @@ let main args =
 type X = { mutable v: int }
 [<EntryPoint>]
 let main args =
-  let mutable x = 0
-  let ptr = NativePtr.toNativeInt<int> &&x
-  let p = NativePtr.ofNativeInt<int> ptr
-  let mutable v = NativePtr.read p
-  v <- 100
-  x |> printfn "%A"
+  //let mutable x = 0
+  //let ptr = NativePtr.toNativeInt<int> &&x
+  //let p = NativePtr.ofNativeInt<int> ptr
+  //let mutable v = NativePtr.read p
+  //v <- 100
+  //x |> printfn "%A"
+  //System.Console.ReadKey() |> ignore
+
+  [| System.Int32.MaxValue; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 |]
+  |> Funtom.collections.Array.max
+  |> printfn "%d"
+  
   System.Console.ReadKey() |> ignore
 
   0
