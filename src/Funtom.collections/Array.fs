@@ -33,18 +33,15 @@ module Array =
   let inline max<^T when ^T: unmanaged and ^T: struct and ^T: comparison and ^T: (new: unit -> ^T) and ^T:> System.ValueType>
     (src: array<^T>) =
       let inline non_simd() =
-        debug_writel("### non_simd")
         let mutable max = src[0]
         for n in src do if max < n then max <- n
         max
       let inline simd_128() =
-        debug_writel("### simd_128")
         let src = src.AsSpan()
         let r' = &(ref src)
         let to' = &(Unsafe.Add(&r', src.Length - vec128<^T>.Count))
         Internal.max128(&r', &to', vec128.LoadUnsafe(&r'))
       let inline simd_256() = 
-        debug_writel("### simd_256")
         let src = src.AsSpan()
         let r' = &(ref src)
         let to' = &(Unsafe.Add(&r', src.Length - vec256<^T>.Count))

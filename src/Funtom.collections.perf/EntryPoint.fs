@@ -27,6 +27,7 @@ type Benchmark () =
 
   [<GlobalSetup>]
   member __.Setup() =
+    //ys <- [|for _ in 1..1000 do fake.Random.Int(0, 100)|]
     ys <- [|for _ in 1..10_00_000 do fake.Random.Int(0, 100)|]
 
   [<Benchmark>]
@@ -42,7 +43,6 @@ type Benchmark () =
 [<EntryPoint>]
 let main args =
   BenchmarkRunner.Run<Benchmark>() |> ignore
-  System.Console.ReadKey() |> ignore
   0
 #else
 #nowarn "9"
@@ -57,7 +57,7 @@ let main args =
   //x |> printfn "%A"
   //System.Console.ReadKey() |> ignore
 
-  [|for _ in 1..10_00_000 do fake.Random.Int(0, 100)|]
+  [|for _ in 1000 do fake.Random.Int(0, 100)|]
   |> Funtom.collections.Array.max
   |> printfn "%d"
   

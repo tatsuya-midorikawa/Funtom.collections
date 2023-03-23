@@ -19,7 +19,7 @@ module core =
       if not vec128.IsHardwareAccelerated || src_length < vec128<^T>.Count
         // Not SIMD
         then non_simd()
-        elif not vec256.IsHardwareAccelerated || src_length< vec256<^T>.Count
+        elif not vec256.IsHardwareAccelerated || src_length < vec256<^T>.Count
           // SIMD : 128bit
           then simd_128()
           // SIMD : 256bit
