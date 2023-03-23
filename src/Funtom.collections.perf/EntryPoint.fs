@@ -11,51 +11,32 @@ type Sample = { Num1: int; Num2: int }
 
 [<PlainExporter; MemoryDiagnoser>]
 type Benchmark () =  
-  let mutable xs = List.empty
+  // let mutable xs = List.empty
+  // let mutable ys = Array.empty
+  // let mutable zs = ResizeArray()
+  // let mutable ss = Seq.empty
+
+  // [<GlobalSetup>]
+  // member __.Setup() =
+  //   xs <- [for _ in 1..10_00_000 do fake.Random.Int(0, 100)]
+  //   ys <- [|for _ in 1..10_00_000 do fake.Random.Int(0, 100)|]
+  //   zs <- ResizeArray([|for _ in 1..10_00_000 do fake.Random.Int(0, 100)|])
+  //   ss <- [|for _ in 1..10_00_000 do fake.Random.Int(0, 100)|] |> Seq.ofArray
+
   let mutable ys = Array.empty
-  let mutable zs = ResizeArray()
-  let mutable ss = Seq.empty
-  
-  let mutable xs' = List.empty
-  let mutable ys' = Array.empty
-  let mutable zs' = ResizeArray()
-  let mutable ss' = Seq.empty
-  
-  let mutable xs'' : list<Sample> = List.empty
-  let mutable ys'' : array<Sample> = Array.empty
-  let mutable zs'' : ResizeArray<Sample> = ResizeArray()
-  let mutable ss'' : seq<Sample> = Seq.empty
-  
+
   [<GlobalSetup>]
-  member this.Setup() =
-    xs <- [for _ in 1..10000 do fake.Random.Int()]
-    ys <- [|for _ in 1..10000 do fake.Random.Int()|]
-    zs <- ResizeArray([|for _ in 1..10000 do fake.Random.Int()|])
-    ss <- [|for _ in 1..10000 do fake.Random.Int()|] |> Seq.ofArray
-
-    //xs' <- [1..10000]
-    //ys' <- [|1..10000|]
-    //zs' <- ResizeArray([|1..10000|])
-    //ss' <- [|1..10000|] |> Seq.ofArray
-    
-    //xs'' <- [for _ in 1..10000 do { Num1 = fake.Random.Int(); Num2 = fake.Random.Int() } ]
-    //ys'' <- [|for _ in 1..10000 do { Num1 = fake.Random.Int(); Num2 = fake.Random.Int() } |]
-    //zs'' <- ResizeArray([|for _ in 1..10000 do { Num1 = fake.Random.Int(); Num2 = fake.Random.Int() } |])
-    //ss'' <- [|for _ in 1..10000 do { Num1 = fake.Random.Int(); Num2 = fake.Random.Int() } |] |> Seq.ofArray
+  member __.Setup() =
+    ys <- [|for _ in 1..10_00_000 do fake.Random.Int(0, 100)|]
 
   [<Benchmark>]
-  member __.normal_for() =
-    let mutable acc = 0
-    for y in ys do
-      acc <- acc + y
-    acc
+  member __.Linq_max() = ys.Max()
 
   [<Benchmark>]
-  member __.span_for() =
-    let mutable acc = 0
-    for y in ys.AsSpan() do
-      acc <- acc + y
-    acc
+  member __.Array_max() = Array.max ys
+
+  [<Benchmark>]
+  member __.Funtom_Array_max() = Funtom.collections.Array.max ys
 
 #if BENCHMARK
 [<EntryPoint>]
@@ -76,7 +57,7 @@ let main args =
   //x |> printfn "%A"
   //System.Console.ReadKey() |> ignore
 
-  [| System.Int32.MaxValue; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 |]
+  [| System.Int32.MaxValue-2; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1; System.Int32.MaxValue-3 |]
   |> Funtom.collections.Array.max
   |> printfn "%d"
   
