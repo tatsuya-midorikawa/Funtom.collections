@@ -57,7 +57,7 @@ let main args =
   //x |> printfn "%A"
   //System.Console.ReadKey() |> ignore
 
-  [| System.Int32.MaxValue-2; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1 ; 1; System.Int32.MaxValue-3 |]
+  [|for _ in 1..10_00_000 do fake.Random.Int(0, 100)|]
   |> Funtom.collections.Array.max
   |> printfn "%d"
   
