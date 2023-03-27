@@ -38,6 +38,9 @@ type Benchmark () =
 
   [<Benchmark>]
   member __.Funtom_Array_max() = Funtom.collections.Array.max ys
+  
+  [<Benchmark>]
+  member __.SimdLinq_max() = SimdLinq.SimdLinqExtensions.Max(ys)
 
 #if BENCHMARK
 [<EntryPoint>]
