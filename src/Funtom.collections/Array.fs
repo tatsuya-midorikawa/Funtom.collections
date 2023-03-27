@@ -8,16 +8,16 @@ module Array =
 
   module Internal =
     let rec max128<'T when 'T: unmanaged and 'T: struct and 'T: comparison and 'T: (new: unit -> 'T) and 'T:> System.ValueType>
-      (c: byref<'T>, to': byref<'T>, max': vec128<'T>) =
-        if Unsafe.IsAddressLessThan(&c, &to')
+      (current': byref<'T>, last': byref<'T>, best': vec128<'T>) =
+        if Unsafe.IsAddressLessThan(&current', &last')
           then
-            max128 (&Unsafe.Add(&c, vec128<'T>.Count), &to', vec128.Max(max', vec128.LoadUnsafe(&c)))
+            max128 (&Unsafe.Add(&current', vec128<'T>.Count), &last', vec128.Max(best', vec128.LoadUnsafe(&current')))
           else
-            let max' = vec128.Max(max', vec128.LoadUnsafe(&to'))
-            let mutable max'' = max'[0]
+            let best = vec128.Max(best', vec128.LoadUnsafe(&last'))
+            let mutable max = best[0]
             for i = 1 to vec128<'T>.Count - 1 do
-              if max'' < max'[i] then max'' <- max'[i]
-            max''
+              if max < best[i] then max <- best[i]
+            max
     let rec max256<'T when 'T: unmanaged and 'T: struct and 'T: comparison and 'T: (new: unit -> 'T) and 'T:> System.ValueType>
       (current': byref<'T>, last': byref<'T>, best': vec256<'T>) =
         if Unsafe.IsAddressLessThan(&current', &last')
@@ -53,14 +53,14 @@ module Array =
       //   let src = src.AsSpan()
       //   let current = &(ref src)
       //   let last = &(Unsafe.Add(&current, src.Length - vec256<^T>.Count))
-
+      //
       //   let mutable best = vec256.LoadUnsafe(&current)
       //   current <- Unsafe.Add(&current, vec256<^T>.Count)
       //   while Unsafe.IsAddressLessThan(&last, &current) do
       //     best <- vec256.Max(best, vec256.LoadUnsafe(&current))
       //     current <- Unsafe.Add(&current, vec256<^T>.Count)
       //   best <- vec256.Max(best, vec256.LoadUnsafe(&last))
-
+      //
       //   let mutable max = best[0]
       //   for i = 1 to vec256<^T>.Count - 1 do
       //     if max < best[i] then max <- best[i]
