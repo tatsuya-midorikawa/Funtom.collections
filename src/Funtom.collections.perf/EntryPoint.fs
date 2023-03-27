@@ -40,12 +40,34 @@ type Benchmark () =
   member __.Funtom_Array_max() = Funtom.collections.Array.max ys
   
   [<Benchmark>]
-  member __.SimdLinq_max() = SimdLinq.SimdLinqExtensions.Max(ys)
+  member __.Funtom_Array_max_v2() = Funtom.collections.Array.max_v2 ys
+
+  //[<Benchmark>]
+  //member __.SimdLinq_max() = SimdLinq.SimdLinqExtensions.Max(ys)
 
 #if BENCHMARK
 [<EntryPoint>]
 let main args =
   BenchmarkRunner.Run<Benchmark>() |> ignore
+  0
+#else
+#if RELEASE
+[<EntryPoint>]
+let main args =
+  let xs = [|for _ in 0..10 do fake.Random.Int(0, 100)|]
+  let xs = [| 999 |] |> Array.append xs
+  xs |> printfn "%A"
+  
+  xs
+  |> Array.max
+  |> printfn "FSharp Array.max= %d"
+  xs
+  |> Funtom.collections.Array.max
+  |> printfn "Funtom Array.max= %d"
+  xs
+  |> Funtom.collections.Array.max_v2
+  |> printfn "Funtom Array.max_v2= %d"
+  
   0
 #else
 #nowarn "9"
@@ -61,10 +83,18 @@ let main args =
   //System.Console.ReadKey() |> ignore
 
   let xs = [|for _ in 0..10 do fake.Random.Int(0, 100)|]
+  let xs = [| 999 |] |> Array.append xs
   xs |> printfn "%A"
+  
+  xs
+  |> Array.max
+  |> printfn "FSharp Array.max= %d"
   xs
   |> Funtom.collections.Array.max
-  |> printfn "%d"
+  |> printfn "Funtom Array.max= %d"
+  xs
+  |> Funtom.collections.Array.max_v2
+  |> printfn "Funtom Array.max_v2= %d"
   
   0
   //let mutable p = NativePtr.read (NativePtr.ofNativeInt<int> x)
@@ -72,4 +102,5 @@ let main args =
   //x |> printfn "%A"
   //System.Console.ReadKey() |> ignore
   //0
+#endif
 #endif
