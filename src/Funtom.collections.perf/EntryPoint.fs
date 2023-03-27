@@ -57,12 +57,12 @@ let main args =
   //x |> printfn "%A"
   //System.Console.ReadKey() |> ignore
 
-  [|for _ in 1000 do fake.Random.Int(0, 100)|]
+  let xs = [|for _ in 0..10 do fake.Random.Int(0, 100)|]
+  xs |> printfn "%A"
+  xs
   |> Funtom.collections.Array.max
   |> printfn "%d"
   
-  System.Console.ReadKey() |> ignore
-
   0
   //let mutable p = NativePtr.read (NativePtr.ofNativeInt<int> x)
   //p <- 100

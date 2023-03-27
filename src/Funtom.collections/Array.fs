@@ -3,6 +3,7 @@
 module Array =
   open System
   open System.Runtime.CompilerServices
+  open System.Runtime.Intrinsics.X86
   open Funtom.collections.internals.core
 
   module Internal =
@@ -26,7 +27,7 @@ module Array =
           else
             let max' = vec256.Max(max', vec256.LoadUnsafe(&to'))
             let mutable max'' = max'[0]
-            for i = 1 to vec256<^T>.Count - 1 do
+            for i = 1 to vec256<'T>.Count - 1 do
               if max'' < max'[i] then max'' <- max'[i]
             max''
     
@@ -41,13 +42,35 @@ module Array =
         let r' = &(ref src)
         let to' = &(Unsafe.Add(&r', src.Length - vec128<^T>.Count))
         Internal.max128(&r', &to', vec128.LoadUnsafe(&r'))
+      //let inline simd_256() = 
+      //  let src = src.AsSpan()
+      //  let r' = &(ref src)
+      //  let to' = &(Unsafe.Add(&r', src.Length - vec256<^T>.Count))
+      //  Internal.max256(&r', &to', vec256.LoadUnsafe(&r'))
+
+      // SIMD256: Very Slow
+      // https://github.com/dotnet/runtime/blob/release/8.0-preview3/src/libraries/System.Linq/src/System/Linq/MaxMin.cs#L71
       let inline simd_256() = 
-        let src = src.AsSpan()
-        let r' = &(ref src)
-        let to' = &(Unsafe.Add(&r', src.Length - vec256<^T>.Count))
-        Internal.max256(&r', &to', vec256.LoadUnsafe(&r'))
+        let mutable src = src.AsSpan()
+        let mutable current = &(ref src)
+        let mutable last = &(Unsafe.Add(&current, src.Length - vec256<^T>.Count))
+
+        let mutable best = vec256.LoadUnsafe(&current)
+        current <- Unsafe.Add(&current, vec256<^T>.Count)
+        while Unsafe.IsAddressLessThan(&last, &current) do
+          best <- vec256.Max(best, vec256.LoadUnsafe(&current))
+          current <- Unsafe.Add(&current, vec256<^T>.Count)
+        best <- vec256.Max(best, vec256.LoadUnsafe(&last))
+
+        let mutable max = best[0]
+        for i = 1 to vec256<^T>.Count - 1 do
+          if max < best[i] then max <- best[i]
+        max
+
+
 
       if src = defaultof<_> || src.Length = 0
         then throw_empty()
         else exec (src.Length, non_simd, simd_128, simd_256)
+       
 
