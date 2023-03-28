@@ -52,10 +52,10 @@ let main args =
 type X = { mutable v: int }
 [<EntryPoint>]
 let main args =
-  let xs = [|for _ in 0..100 do fake.Random.Int(0, 100)|]
-  let xs = [| 999 |] |> Array.append xs
-  xs |> printfn "%A"
+  let xs = [| for _ in 1..100_000_000 do fake.Random.Int(System.Int32.MinValue, System.Int32.MaxValue) |]
   
+  xs.Max()
+  |> printfn "System.Linq.Max= %d"
   xs
   |> Array.max
   |> printfn "FSharp Array.max= %d"
