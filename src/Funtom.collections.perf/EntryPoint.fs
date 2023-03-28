@@ -63,6 +63,15 @@ let main args =
   |> Funtom.collections.Array.max
   |> printfn "Funtom Array.max= %d"
   
+  xs.Min()
+  |> printfn "System.Linq.Min= %d"
+  xs
+  |> Array.min
+  |> printfn "FSharp Array.min= %d"
+  xs
+  |> Funtom.collections.Array.min
+  |> printfn "Funtom Array.min= %d"
+
   0
 #endif
 #endif
