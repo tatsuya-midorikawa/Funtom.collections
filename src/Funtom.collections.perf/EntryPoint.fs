@@ -12,7 +12,7 @@ type Benchmark () =
 
   [<GlobalSetup>]
   member __.Setup() =
-    xs <- [|for _ in 1..1_000 do fake.Random.Int(System.Int32.MinValue, System.Int32.MaxValue)|]
+    xs <- [| for _ in 1..100_000_000 do fake.Random.Int(System.Int32.MinValue, System.Int32.MaxValue) |]
 
   [<Benchmark>]
   member __.Linq_max() = xs.Max()
@@ -52,15 +52,7 @@ let main args =
 type X = { mutable v: int }
 [<EntryPoint>]
 let main args =
-  //let mutable x = 0
-  //let ptr = NativePtr.toNativeInt<int> &&x
-  //let p = NativePtr.ofNativeInt<int> ptr
-  //let mutable v = NativePtr.read p
-  //v <- 100
-  //x |> printfn "%A"
-  //System.Console.ReadKey() |> ignore
-
-  let xs = [|for _ in 0..10 do fake.Random.Int(0, 100)|]
+  let xs = [|for _ in 0..100 do fake.Random.Int(0, 100)|]
   let xs = [| 999 |] |> Array.append xs
   xs |> printfn "%A"
   
@@ -72,10 +64,5 @@ let main args =
   |> printfn "Funtom Array.max= %d"
   
   0
-  //let mutable p = NativePtr.read (NativePtr.ofNativeInt<int> x)
-  //p <- 100
-  //x |> printfn "%A"
-  //System.Console.ReadKey() |> ignore
-  //0
 #endif
 #endif
