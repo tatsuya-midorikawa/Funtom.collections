@@ -5,29 +5,24 @@ open System.Linq
 
 let fake = Faker()
 
-type Sample = { Num1: int; Num2: int }
-
 [<PlainExporter; MemoryDiagnoser>]
-type Benchmark () =  
+type Benchmark () =
+
   let mutable xs = Array.empty
 
   [<GlobalSetup>]
   member __.Setup() =
-    xs <- [|for _ in 1..10_00_000 do fake.Random.Int(System.Int32.MinValue, System.Int32.MaxValue)|]
+    xs <- [|for _ in 1..1_000 do fake.Random.Int(System.Int32.MinValue, System.Int32.MaxValue)|]
 
   [<Benchmark>]
-  member __.Linq_max() = System.Linq.Enumerable.Max xs
+  member __.Linq_max() = xs.Max()
 
   [<Benchmark>]
   member __.Array_max() = Array.max xs
-
+    
   [<Benchmark>]
-  member __.SimdLinq_max() = SimdLinq.SimdLinqExtensions.Max xs
-
-  [<Benchmark>]
-  member __.Funtom_Array_max() = Funtom.collections.Array.max xs
+  member __.Funtom_Array_max_v2() = Funtom.collections.Array.max xs
   
-
 #if BENCHMARK
 [<EntryPoint>]
 let main args =
