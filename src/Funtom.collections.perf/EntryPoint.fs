@@ -7,40 +7,23 @@ open FSharp.NativeInterop
 
 let fake = Faker()
 
-type Sample = { Num1: int; Num2: int }
-
 [<PlainExporter; MemoryDiagnoser>]
-type Benchmark () =  
-  // let mutable xs = List.empty
-  // let mutable ys = Array.empty
-  // let mutable zs = ResizeArray()
-  // let mutable ss = Seq.empty
+type Benchmark () =
 
-  // [<GlobalSetup>]
-  // member __.Setup() =
-  //   xs <- [for _ in 1..10_00_000 do fake.Random.Int(0, 100)]
-  //   ys <- [|for _ in 1..10_00_000 do fake.Random.Int(0, 100)|]
-  //   zs <- ResizeArray([|for _ in 1..10_00_000 do fake.Random.Int(0, 100)|])
-  //   ss <- [|for _ in 1..10_00_000 do fake.Random.Int(0, 100)|] |> Seq.ofArray
-
-  let mutable ys = Array.empty
+  let mutable xs = Array.empty
 
   [<GlobalSetup>]
   member __.Setup() =
-    //ys <- [|for _ in 1..1000 do fake.Random.Int(0, 100)|]
-    ys <- [|for _ in 1..10_00_000 do fake.Random.Int(0, 100)|]
+    xs <- [|for _ in 1..1_000 do fake.Random.Int(System.Int32.MinValue, System.Int32.MaxValue)|]
 
   [<Benchmark>]
-  member __.Linq_max() = ys.Max()
+  member __.Linq_max() = xs.Max()
 
   [<Benchmark>]
-  member __.Array_max() = Array.max ys
-
+  member __.Array_max() = Array.max xs
+    
   [<Benchmark>]
-  member __.Funtom_Array_max() = Funtom.collections.Array.max ys
-  
-  [<Benchmark>]
-  member __.Funtom_Array_max_v2() = Funtom.collections.Array.max_v2 ys
+  member __.Funtom_Array_max_v2() = Funtom.collections.Array.max xs
 
 #if BENCHMARK
 [<EntryPoint>]
