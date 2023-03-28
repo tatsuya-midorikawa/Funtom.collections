@@ -22,7 +22,6 @@ module Array =
             let mutable last = vec128.Load(NativePtr.add p (src.Length - vec128<^T>.Count))
             for i = 1 to src.Length / vec128<^T>.Count - 1 do
               best <- vec128.Max<^T>(best, NativePtr.add p (i * vec128<^T>.Count) |> vec128.Load)
-    
             best <- vec128.Max<^T>(best, last)
             let mutable max = best[0]
             let mutable i = 1
@@ -37,7 +36,6 @@ module Array =
             let mutable last = vec256.Load(NativePtr.add p (src.Length - vec256<^T>.Count))
             for i = 1 to src.Length / vec256<^T>.Count - 1 do
               best <- vec256.Max<^T>(best, NativePtr.add p (i * vec256<^T>.Count) |> vec256.Load)
-    
             best <- vec256.Max<^T>(best, last)
             let mutable max = best[0]
             let mutable i = 1

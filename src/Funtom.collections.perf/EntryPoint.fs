@@ -1,9 +1,7 @@
 ﻿open BenchmarkDotNet.Attributes
 open BenchmarkDotNet.Running
 open Bogus
-open System
 open System.Linq
-open FSharp.NativeInterop
 
 let fake = Faker()
 
@@ -24,7 +22,7 @@ type Benchmark () =
     
   [<Benchmark>]
   member __.Funtom_Array_max_v2() = Funtom.collections.Array.max xs
-
+  
 #if BENCHMARK
 [<EntryPoint>]
 let main args =
@@ -72,9 +70,6 @@ let main args =
   xs
   |> Funtom.collections.Array.max
   |> printfn "Funtom Array.max= %d"
-  xs
-  |> Funtom.collections.Array.max_v2
-  |> printfn "Funtom Array.max_v2= %d"
   
   0
   //let mutable p = NativePtr.read (NativePtr.ofNativeInt<int> x)
