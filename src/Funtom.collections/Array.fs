@@ -1,130 +1,50 @@
 ﻿namespace Funtom.collections
 
+#nowarn "9"
+
 module Array =
-  open System
-  open System.Runtime.CompilerServices
+  open Microsoft.FSharp.NativeInterop
   open Funtom.collections.internals.core
 
-  module Internal =
-    let rec max128<'T when 'T: unmanaged and 'T: struct and 'T: comparison and 'T: (new: unit -> 'T) and 'T:> System.ValueType>
-      (current: byref<'T>, last': byref<'T>, best': vec128<'T>) =
-        if Unsafe.IsAddressLessThan(&current, &last')
-          then
-            max128 (&Unsafe.Add(&current, vec128<'T>.Count), &last', vec128.Max(best', vec128.LoadUnsafe(&current)))
-          else
-            let best = vec128.Max(best', vec128.LoadUnsafe(&last'))
-            let mutable max = best[0]
-            for i = 1 to vec128<'T>.Count - 1 do
-              if max < best[i] then max <- best[i]
-            max
+  let inline max<^T when ^T: unmanaged and ^T: struct and ^T: comparison and ^T: (new: unit -> ^T) and ^T:> System.ValueType>
+    (src: array<^T>) =
 
-    //let rec max256<'T when 'T: unmanaged and 'T: struct and 'T: comparison and 'T: (new: unit -> 'T) and 'T:> System.ValueType>
-    //  (current': byref<'T>, last': byref<'T>, best': vec256<'T>) =
-    //    if Unsafe.IsAddressLessThan(&current', &last')
-    //      then
-    //        max256 (&Unsafe.Add(&current', vec256<'T>.Count), &last', vec256.Max(best', vec256.LoadUnsafe(&current')))
-    //      else
-    //        let best = vec256.Max(best', vec256.LoadUnsafe(&last'))
-    //        let mutable max = best[0]
-    //        let mutable i = 1
-    //        while i < vec256<'T>.Count do
-    //          if max < best[i] then max <- best[i]
-    //          i <- i + 1
-    //        max
-
-    let rec max256<'T when 'T: unmanaged and 'T: struct and 'T: comparison and 'T: (new: unit -> 'T) and 'T:> System.ValueType>
-      (current': byref<'T>, last': byref<'T>, best': vec256<'T>) =
-        if Unsafe.IsAddressLessThan(&current', &last')
+      if not vec128.IsHardwareAccelerated || src.Length < vec128<^T>.Count
+        // Not SIMD
+        then
+          let mutable max = src[0]
+          for n in src do if max < n then max <- n
+          max
+        elif not vec256.IsHardwareAccelerated || src.Length < vec256<^T>.Count
+          // SIMD : 128bit
           then
-            max256 (&Unsafe.Add(&current', vec256<'T>.Count), &last', vec256.Max(best', vec256.LoadUnsafe(&current')))
-          else
-            let best = vec256.Max(best', vec256.LoadUnsafe(&last'))
+            use p = fixed &src[0]
+            let mutable best = vec128.Load p
+            let mutable last = vec128.Load(NativePtr.add p (src.Length - vec128<^T>.Count))
+            for i = 1 to src.Length / vec128<^T>.Count - 1 do
+              best <- vec128.Max<^T>(best, NativePtr.add p (i * vec128<^T>.Count) |> vec128.Load)
+
+            best <- vec128.Max<^T>(best, last)
             let mutable max = best[0]
             let mutable i = 1
-            while i < vec256<'T>.Count do
+            while i < vec128<^T>.Count do
+              if max < best[i] then max <- best[i]
+              i <- i + 1
+            max
+          // SIMD : 256bit
+          else
+            use p = fixed &src[0]
+            let mutable best = vec256.Load p
+            let mutable last = vec256.Load(NativePtr.add p (src.Length - vec256<^T>.Count))
+            for i = 1 to src.Length / vec256<^T>.Count - 1 do
+              best <- vec256.Max<^T>(best, NativePtr.add p (i * vec256<^T>.Count) |> vec256.Load)
+
+            best <- vec256.Max<^T>(best, last)
+            let mutable max = best[0]
+            let mutable i = 1
+            while i < vec256<^T>.Count do
               if max < best[i] then max <- best[i]
               i <- i + 1
             max
 
-    let inline max256v2<^T when ^T: unmanaged and ^T: struct and ^T: comparison and ^T: (new: unit -> ^T) and ^T:> System.ValueType>
-      (current': byref<^T>, last': byref<^T>) =
-        let mutable best = vec256.LoadUnsafe(&current')
-        current' <- Unsafe.Add(&current', vec256<^T>.Count)
-        while Unsafe.IsAddressLessThan(&last', &current') do
-          best <- vec256.Max(best, vec256.LoadUnsafe &current')
-          current' <- Unsafe.Add(&current', vec256<^T>.Count)
-        best <- vec256.Max(best, vec256.LoadUnsafe &last')
-        let mutable max = best[0]
-        let mutable i = 1
-        while i < vec256<^T>.Count do
-          if max < best[i] then max <- best[i]
-          i <- i + 1
-        max
-
-           
-  let inline max<^T when ^T: unmanaged and ^T: struct and ^T: comparison and ^T: (new: unit -> ^T) and ^T:> System.ValueType>
-    (src: array<^T>) =
-
-      let inline non_simd() =
-        let mutable max = src[0]
-        for n in src do if max < n then max <- n
-        max
-      let inline simd_128() =
-        let src = src.AsSpan()
-        let current' = &(ref src)
-        let last' = &(Unsafe.Add(&current', src.Length - vec128<^T>.Count))
-        Internal.max128(&current', &last', vec128.LoadUnsafe(&current'))
-      let inline simd_256() = 
-        let mutable src = src.AsSpan()
-        let mutable current' = &(ref src)
-        let mutable last' = &(Unsafe.Add(&current', src.Length - vec256<^T>.Count))
-        Internal.max256(&current', &last', vec256.LoadUnsafe(&current'))
-
-      if src = defaultof<_> || src.Length = 0
-        then throw_empty()
-        else exec (src.Length, non_simd, simd_128, simd_256)
-
-
-  let inline max_v2<^T when ^T: unmanaged and ^T: struct and ^T: comparison and ^T: (new: unit -> ^T) and ^T:> System.ValueType>
-    (src: array<^T>) =
-
-      let inline non_simd() =
-        let mutable max = src[0]
-        for n in src do if max < n then max <- n
-        max
-      let inline simd_128_v2() =
-        let src = src.AsSpan()
-        let current' = &(ref src)
-        let last' = &(Unsafe.Add(&current', src.Length - vec128<^T>.Count))
-        let mutable best = vec128.LoadUnsafe(&current')
-        current' <- Unsafe.Add(&current', vec128<^T>.Count)
-        while Unsafe.IsAddressLessThan(&last', &current') do
-          best <- vec128.Max(best, vec128.LoadUnsafe &current')
-          current' <- Unsafe.Add(&current', vec128<^T>.Count)
-        best <- vec128.Max(best, vec128.LoadUnsafe &last')
-        let mutable max = best[0]
-        let mutable i = 1
-        while i < vec128<^T>.Count do
-          if max < best[i] then max <- best[i]
-          i <- i + 1
-        max
-      let inline simd_256_v2() = 
-        let mutable src = src.AsSpan()
-        let mutable current' = &(ref src)
-        let mutable last' = &(Unsafe.Add(&current', src.Length - vec256<^T>.Count))
-        let mutable best = vec256.LoadUnsafe(&current')
-        current' <- Unsafe.Add(&current', vec256<^T>.Count)
-        while Unsafe.IsAddressLessThan(&last', &current') do
-          best <- vec256.Max(best, vec256.LoadUnsafe &current')
-          current' <- Unsafe.Add(&current', vec256<^T>.Count)
-        best <- vec256.Max(best, vec256.LoadUnsafe &last')
-        let mutable max = best[0]
-        let mutable i = 1
-        while i < vec256<^T>.Count do
-          if max < best[i] then max <- best[i]
-          i <- i + 1
-        max
-
-      if src = defaultof<_> || src.Length = 0
-        then throw_empty()
-        else exec (src.Length, non_simd, simd_128_v2, simd_256_v2)
+        
